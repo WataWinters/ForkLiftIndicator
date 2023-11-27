@@ -1,0 +1,129 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Indicator.MainPage">
+    <Grid>
+        <Image
+                Source="{Binding back_ground_src}"
+                Aspect="AspectFill"/>
+
+
+
+        <Label Text="QR Value"
+           HorizontalOptions="Center"
+           HorizontalTextAlignment="Center"
+           VerticalOptions="CenterAndExpand"
+           TextColor="White"
+           FontSize="30"
+           FontAttributes="Bold"
+           WidthRequest="550"
+           Margin="0,130,0,0" 
+           />
+
+
+
+
+        <Label Text="{Binding QR_Label}"
+           HorizontalOptions="Center"
+           HorizontalTextAlignment="Center"
+           VerticalOptions="CenterAndExpand"
+           TextColor="White"
+           FontSize="30"
+           FontAttributes="Bold"
+           WidthRequest="550"
+           Margin="0,210,0,0" 
+           />
+
+
+        <Label Text="{Binding LeftStatusLabel}"
+           WidthRequest="170"
+           HorizontalOptions="Center"
+           TextColor="{Binding LeftColorLabel}"
+           FontSize="20"
+           FontAttributes="Bold" 
+           Margin="-200,180,0,0"
+           />
+
+
+
+
+        <Label Text="{Binding LeftWeightLabel}"
+           WidthRequest="170"
+           HorizontalOptions="Center"
+           TextColor="White"
+           FontSize="40"
+           FontAttributes="Bold" 
+           Margin="-200,220,0,0"
+           />
+
+
+
+        <Label Text="{Binding RightStatusLabel}"
+           WidthRequest="190"
+           HorizontalOptions="Center"
+           TextColor="{Binding RightColorLabel}"
+           FontSize="20"
+           FontAttributes="Bold" 
+           Margin="400,180,0,0" 
+           />
+
+
+        <Label Text="{Binding RightWeightLabel}"
+           WidthRequest="190"
+           HorizontalOptions="Center"
+           TextColor="White"
+           FontSize="40"
+           FontAttributes="Bold" 
+           Margin="400,220,0,0" 
+           />
+
+
+        <Label Text="{Binding TotalWeight_Label}" 
+           HorizontalOptions="Center"
+           Margin="0,400,0,0" 
+           TextColor="White"
+           FontSize="50"
+           HorizontalTextAlignment="Center"
+           WidthRequest="550"
+           />
+
+
+        <Label Text="Height"
+           HorizontalOptions="Center"
+           VerticalOptions="CenterAndExpand"
+           TextColor="White"
+           FontSize="30"
+           FontAttributes="Bold" 
+           Margin="0,430,0,0" 
+           WidthRequest="550"
+           HorizontalTextAlignment="Center"
+           />
+
+
+        <Label Text="{Binding Vision_h_Label}" 
+           HorizontalOptions="Center"
+           VerticalOptions="CenterAndExpand"
+           TextColor="White"
+           FontSize="30"
+           FontAttributes="Bold" 
+           Margin="0,550,0,0" 
+           WidthRequest="550"
+           HorizontalTextAlignment="Center"
+           />
+
+        
+
+
+        <Button
+                x:Name="SendBbtn"
+                Text="Send Platform"
+                Clicked="OnSendBtn"
+                HorizontalOptions="Center"     
+                VerticalOptions="CenterAndExpand"
+                WidthRequest="550"
+                HeightRequest="80"
+                Margin="0,810,0,0" 
+                BackgroundColor="MidnightBlue"
+            />
+    </Grid>
+</ContentPage>
