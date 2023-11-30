@@ -1,4 +1,5 @@
 ﻿using Indicator.Model;
+using Indicator.TCP;
 using Indicator.Utill;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -9,23 +10,13 @@ namespace Indicator;
 
 public partial class MainPage : ContentPage
 {
-
-    private TcpClient tcpClient;
-    private NetworkStream networkStream;
-    private CancellationTokenSource cancellationTokenSource;
     private MainViewModel viewModel;
-
-
-
-
+    
     public MainPage()
     {
         InitializeComponent();
-        viewModel  = new MainViewModel();
+        viewModel  = new MainViewModel(); //binding
         BindingContext = viewModel;
-
-        ConnectTimer();
-       
         viewModel.LeftStatusLabel = "Offline";
         viewModel.RightStatusLabel = "Offline";
         viewModel.back_ground_src = "screen_inactive.png";
@@ -37,159 +28,74 @@ public partial class MainPage : ContentPage
         viewModel.TotalWeight_Label = "-";
 
 
+        TCPSocketClient msg = new TCPSocketClient();
+        msg.Initialize();
+
+
+        OnDataReceive();
+
+        OnStatusReceive();
     }
 
-    int _OlineCheckCnt = 0;
-
-
-    private void StatusCheck()
+    private void OnDataReceive()
     {
-        if (_OlineCheckCnt < 5)
+        MessagingCenter.Subscribe<object, string>(this, "TCP_DATA_Receive", (sender, message) =>
+        {
+            ParaseJsonUI(message);
+        });
+    }
+
+
+    private void OnStatusReceive()
+    {
+        MessagingCenter.Subscribe<object, string>(this, "TCP_STATUS_Receive", (sender, message) =>
+        {
+            StatusDisplay(message);
+        });
+    }
+
+
+
+
+    private void StatusDisplay(string status)
+    {
+        if (status == "disconnect")
         {
             //DisConnect Status
             viewModel.LeftStatusLabel = "Offline";
             viewModel.RightStatusLabel = "Offline";
             viewModel.LeftColorLabel = new Color(255, 0, 0); //Red
             viewModel.RightColorLabel = new Color(255, 0, 0); //Red
-
             viewModel.back_ground_src = "screen_inactive.png";
-
-
             viewModel.QR_Label = "-";
             viewModel.LeftWeightLabel = "-";
             viewModel.RightWeightLabel = "-";
             viewModel.Vision_h_Label = "-";
             viewModel.TotalWeight_Label = "-";
 
-
-
-
-            _OlineCheckCnt = 0;
         }
-        else
+        if (status == "connect")
         {
             //Connect Status
             viewModel.LeftStatusLabel = "Online";
             viewModel.RightStatusLabel = "Online";
             viewModel.LeftColorLabel = new Color(173, 255, 47); //GreenYellow
             viewModel.RightColorLabel = new Color(173, 255, 47); //GreenYellow
-
-
             viewModel.back_ground_src = "screen_active.png";
         }
 
-        _OlineCheckCnt--;
     }
 
-
-    private void ConnectTimer()
-    {
-        Device.StartTimer(new TimeSpan(0, 0, 1), () =>
-        {
-            // do something every 60 seconds
-            Device.BeginInvokeOnMainThread(() =>
-            {
-
-                if (tcpClient != null && tcpClient.Connected == false)
-                {
-                    tcpClient.Close();
-                    tcpClient = null;
-                }
-
-                ConnectToServer();
-            });
-
-
-            StatusCheck();
-
-            return true; // runs again, or false to stop
-        });
-    }
-    
-
-
-    private void OnConnetBtn(object sender, EventArgs e)
-	{
-        //ConnectToServer();
-    }
 
     private void OnSendBtn(object sender, EventArgs e)
     {
         SendBackEndModel model = new SendBackEndModel();
         model.send_backend.eventValue = "pick_up";
         string json_body = Utill_.ObjectToJson(model);
-        SendMessage(json_body);
+        MessagingCenter.Send<object, string>(this, "TCP_DATA_Send", json_body);
     }
 
-    private async Task ConnectToServer()
-    {
-        try
-        {
-            if (tcpClient != null)
-            {
-                return;
-            }
 
-            tcpClient = new TcpClient();
-            await tcpClient.ConnectAsync("192.168.8.100", 8051);
-
-            if (tcpClient.Connected)
-            {
-                networkStream = tcpClient.GetStream();
-                cancellationTokenSource = new CancellationTokenSource();
-                _ = Task.Run(() => ReceiveData(cancellationTokenSource.Token));
-            }
-        }
-        catch (Exception ex)
-        {
-    
-        }
-
-    }
-
-    private async Task SendMessage(string msg)
-    {
-        try
-        {
-            if (tcpClient != null && tcpClient.Connected)
-            {
-                byte[] data = Encoding.UTF8.GetBytes(msg);
-                await networkStream.WriteAsync(data, 0, data.Length);
-            }
-        }
-        catch (Exception ex)
-        {
-        
-        }
-    }
-
-    private async Task ReceiveData(CancellationToken cancellationToken)
-    {
-        try
-        {
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                byte[] buffer = new byte[4096];
-                int bytesRead = await networkStream.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
-
-                if (bytesRead > 0)
-                {
-                    string receivedMessage = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                    ParaseJsonUI(receivedMessage);
-
-                    _OlineCheckCnt = 10;
-                }
-
-              //  Thread.Sleep(100);
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"ReceiveData Exception {ex.Message}");
-            tcpClient.Close();
-            tcpClient = null;
-        }
-    }
 
     private  bool IsValidJson(string json)
     {
