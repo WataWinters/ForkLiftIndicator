@@ -14,11 +14,12 @@ namespace Indicator.TCP
         private NetworkStream networkStream;
         private CancellationTokenSource cancellationTokenSource;
 
-
-        public TCPSocketClient()
+        private string _ipaddress = "";
+        public TCPSocketClient(string ipaddress)
         {
+            _ipaddress = ipaddress;
 
-           
+
         }
 
         public void Initialize()
@@ -32,6 +33,13 @@ namespace Indicator.TCP
 
             });
 
+
+
+            MessagingCenter.Subscribe<object, string>(this, "IP_ADDRESS", (sender, message) =>
+            {
+                    _ipaddress = message;
+            });
+            
         }
 
         private void ConnectTimer()
@@ -92,7 +100,7 @@ namespace Indicator.TCP
                 }
 
                 tcpClient = new TcpClient();
-                await tcpClient.ConnectAsync("192.168.8.100", 8051);
+                await tcpClient.ConnectAsync(_ipaddress, 8051);
 
                 if (tcpClient.Connected)
                 {

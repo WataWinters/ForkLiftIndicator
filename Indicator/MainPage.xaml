@@ -6,9 +6,7 @@
         <Image
                 Source="{Binding back_ground_src}"
                 Aspect="AspectFill"/>
-
-
-
+        
         <Label Text="QR Value"
            HorizontalOptions="Center"
            HorizontalTextAlignment="Center"
@@ -19,9 +17,6 @@
            WidthRequest="550"
            Margin="0,130,0,0" 
            />
-
-
-
 
         <Label Text="{Binding QR_Label}"
            HorizontalOptions="Center"
@@ -111,8 +106,14 @@
            HorizontalTextAlignment="Center"
            />
 
-        
 
+        <Button Clicked="Setting_btn" WidthRequest="200" HeightRequest="50" Margin="0,20,0,0" HorizontalOptions="StartAndExpand"     VerticalOptions="StartAndExpand" BackgroundColor="Transparent">
+            <Button.ImageSource>
+                <FileImageSource File="setting.png" >
+                    
+                </FileImageSource>
+            </Button.ImageSource>
+        </Button>
 
         <Button
                 x:Name="SendBbtn"

@@ -52,6 +52,7 @@
 	  <None Remove="Resources\Images\back.png" />
 	  <None Remove="Resources\Images\screen_active.png" />
 	  <None Remove="Resources\Images\screen_inactive.png" />
+	  <None Remove="Resources\Images\setting.png" />
 	</ItemGroup>
 
 	<ItemGroup>
