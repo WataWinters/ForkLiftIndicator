@@ -2,12 +2,77 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Indicator.MainPage">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <x:String x:Key="label_QRInfo.en">QR Information</x:String>
+            <x:String x:Key="label_QRInfo.ko">QR 취득 정보</x:String>
+            <x:String x:Key="label_QRInfo.jp">QR情報</x:String>
+
+
+            <x:String x:Key="label_Height.en">Height</x:String>
+            <x:String x:Key="label_Height.ko">높이</x:String>
+            <x:String x:Key="label_Height.jp">高度</x:String>
+
+
+            <x:String x:Key="Button_SendPlatform.en">Send Platform</x:String>
+            <x:String x:Key="Button_SendPlatform.ko">플랫폼 전송</x:String>
+            <x:String x:Key="Button_SendPlatform.jp">プラットフォーム転送</x:String>
+
+
+            <x:String x:Key="string_online.en">Online</x:String>
+            <x:String x:Key="string_online.ko">연결됨</x:String>
+            <x:String x:Key="string_online.jp">オンライン</x:String>
+
+
+            <x:String x:Key="string_offline.en">offline</x:String>
+            <x:String x:Key="string_offline.ko">연결 안됨</x:String>
+            <x:String x:Key="string_offline.jp">オフライン</x:String>
+
+
+            <x:String x:Key="string_ip_connect_info.en">IP Connect Information</x:String>
+            <x:String x:Key="string_ip_connect_info.ko">접속 아이피 정보</x:String>
+            <x:String x:Key="string_ip_connect_info.jp">接続IP情報</x:String>
+
+            <x:String x:Key="string_select_language.en">Select Language</x:String>
+            <x:String x:Key="string_select_language.ko">언어선택</x:String>
+            <x:String x:Key="string_select_language.jp">言語選択</x:String>
+
+
+            <x:String x:Key="string_save.en">Save</x:String>
+            <x:String x:Key="string_save.ko">저장</x:String>
+            <x:String x:Key="string_save.jp">セーブ</x:String>
+
+            <x:String x:Key="string_close.en">Close</x:String>
+            <x:String x:Key="string_close.ko">닫기</x:String>
+            <x:String x:Key="string_close.jp">クローズ</x:String>
+
+
+            <x:String x:Key="string_save_success.en">Save Success</x:String>
+            <x:String x:Key="string_save_success.ko">저장성공</x:String>
+            <x:String x:Key="string_save_success.jp">セーブ成功</x:String>
+
+
+            <x:String x:Key="string_save_success_info.en">The options you set are being saved.</x:String>
+            <x:String x:Key="string_save_success_info.ko">설정하신 옵션이 저장 완료 되었습니다.</x:String>
+            <x:String x:Key="string_save_success_info.jp">設定したオプションがセーブ完了されました。</x:String>
+
+            <x:String x:Key="string_ok.en">OK</x:String>
+            <x:String x:Key="string_ok.ko">확인</x:String>
+            <x:String x:Key="string_ok.jp">確認</x:String>
+
+
+
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+
     <Grid>
         <Image
                 Source="{Binding back_ground_src}"
                 Aspect="AspectFill"/>
-        
-        <Label Text="QR Value"
+
+        <Label Text="{DynamicResource label_QRInfo}"
            HorizontalOptions="Center"
            HorizontalTextAlignment="Center"
            VerticalOptions="CenterAndExpand"
@@ -83,7 +148,7 @@
            />
 
 
-        <Label Text="Height"
+        <Label Text="{DynamicResource label_Height}"
            HorizontalOptions="Center"
            VerticalOptions="CenterAndExpand"
            TextColor="White"
@@ -107,17 +172,23 @@
            />
 
 
-        <Button Clicked="Setting_btn" WidthRequest="200" HeightRequest="50" Margin="0,20,0,0" HorizontalOptions="StartAndExpand"     VerticalOptions="StartAndExpand" BackgroundColor="Transparent">
-            <Button.ImageSource>
-                <FileImageSource File="setting.png" >
-                    
-                </FileImageSource>
-            </Button.ImageSource>
-        </Button>
+
+    
+
+        <ImageButton Source="setting.png"
+                     Clicked="Setting_btn"
+                     WidthRequest="50" 
+                     HeightRequest="50" 
+                     Aspect="AspectFit" 
+                     HorizontalOptions="StartAndExpand" 
+                     VerticalOptions="StartAndExpand" 
+                     Margin="10,10,0,0"
+                     />
+
 
         <Button
                 x:Name="SendBbtn"
-                Text="Send Platform"
+                Text="{DynamicResource Button_SendPlatform}"
                 Clicked="OnSendBtn"
                 HorizontalOptions="Center"     
                 VerticalOptions="CenterAndExpand"

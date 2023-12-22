@@ -3,7 +3,7 @@
   <PropertyGroup>
     <ActiveDebugFramework>net6.0-android</ActiveDebugFramework>
     <IsFirstTimeProjectOpen>False</IsFirstTimeProjectOpen>
-    <ActiveDebugProfile>Samsung SM-T575N(Android 12.1 - API 32)</ActiveDebugProfile>
+    <ActiveDebugProfile>Samsung SM-T575N(Android 13.0 - API 33)</ActiveDebugProfile>
     <SelectedPlatformGroup>PhysicalDevice</SelectedPlatformGroup>
     <DefaultDevice>tablet_420-dpi_7_6in_-_api_32</DefaultDevice>
   </PropertyGroup>

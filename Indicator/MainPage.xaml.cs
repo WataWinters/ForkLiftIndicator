@@ -1,14 +1,18 @@
 ﻿using Indicator.Model;
 using Indicator.TCP;
 using Indicator.Utill;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using static Android.Provider.ContactsContract.CommonDataKinds;
+using System.Windows.Input;
 
 namespace Indicator;
+
 
 public partial class MainPage : ContentPage
 {
@@ -16,14 +20,18 @@ public partial class MainPage : ContentPage
 
     private string _ipAddress = "192.168.8.100";
 
+    private string _languageCode;
+
 
     public MainPage()
     {
         InitializeComponent();
         viewModel  = new MainViewModel(); //binding
         BindingContext = viewModel;
-        viewModel.LeftStatusLabel = "Offline";
-        viewModel.RightStatusLabel = "Offline";
+
+        SetLanguage("ko");
+        viewModel.LeftStatusLabel = Resources[$"string_offline.{_languageCode}"].ToString();
+        viewModel.RightStatusLabel = Resources[$"string_offline.{_languageCode}"].ToString();
         viewModel.back_ground_src = "screen_inactive.png";
 
         viewModel.QR_Label = "-";
@@ -43,12 +51,28 @@ public partial class MainPage : ContentPage
         OnDataReceive();
 
         OnStatusReceive();
+
+
+    
     }
+
+    
+
+
+    private void SetLanguage(string languageCode)
+    {
+        _languageCode = languageCode;
+
+        // 언어에 맞는 리소스 키를 사용하여 텍스트 갱신
+        Resources["label_QRInfo"] = Resources[$"label_QRInfo.{languageCode}"];
+        Resources["label_Height"] = Resources[$"label_Height.{languageCode}"];
+        Resources["Button_SendPlatform"] = Resources[$"Button_SendPlatform.{languageCode}"];
+    }
+
 
     private void Setting_btn(object sender, EventArgs e)
     {
-        // 버튼 클릭 이벤트 처리 로직을 여기에 추가
-        // 예: DisplayAlert("알림", "버튼이 클릭되었습니다!", "확인");
+        OpenPopup();
     }
 
 
@@ -77,8 +101,8 @@ public partial class MainPage : ContentPage
         if (status == "disconnect")
         {
             //DisConnect Status
-            viewModel.LeftStatusLabel = "Offline";
-            viewModel.RightStatusLabel = "Offline";
+            viewModel.LeftStatusLabel = Resources[$"string_offline.{_languageCode}"].ToString();
+            viewModel.RightStatusLabel = Resources[$"string_offline.{_languageCode}"].ToString();
             viewModel.LeftColorLabel = new Color(255, 0, 0); //Red
             viewModel.RightColorLabel = new Color(255, 0, 0); //Red
             viewModel.back_ground_src = "screen_inactive.png";
@@ -92,8 +116,8 @@ public partial class MainPage : ContentPage
         if (status == "connect")
         {
             //Connect Status
-            viewModel.LeftStatusLabel = "Online";
-            viewModel.RightStatusLabel = "Online";
+            viewModel.LeftStatusLabel = Resources[$"string_online.{_languageCode}"].ToString();
+            viewModel.RightStatusLabel = Resources[$"string_online.{_languageCode}"].ToString();
             viewModel.LeftColorLabel = new Color(173, 255, 47); //GreenYellow
             viewModel.RightColorLabel = new Color(173, 255, 47); //GreenYellow
             viewModel.back_ground_src = "screen_active.png";
@@ -111,41 +135,71 @@ public partial class MainPage : ContentPage
         model.send_backend.eventValue = "pick_up";
         string json_body = Utill_.ObjectToJson(model);
         MessagingCenter.Send<object, string>(this, "TCP_DATA_Send", json_body);
-
-        OpenPopup();
     }
 
     private async void OpenPopup()
     {
         // 저장된 JSON 데이터를 읽어옴
         string savedJson = ReadSavedJson();
-
+       
         // 팝업에서 입력받을 데이터를 위한 Entry 생성
         Entry jsonEntry = new Entry
         {
-            Placeholder = "IP 주소 입력 (예: 192.168.0.1)",
+            Placeholder = "(ex: 192.168.0.1)",
             Text = FormatIpAddress(savedJson) // 저장된 JSON 데이터를 Entry에 설정하면서 형식 변환
         };
 
         // "접속 IP" 라벨 추가
         Label ipLabel = new Label
         {
-            Text = "접속 IP",
+            Text = Resources[$"string_ip_connect_info.{_languageCode}"].ToString(),
             FontSize = Device.GetNamedSize(NamedSize.Large, typeof(Label)), // 폰트 크기를 크게 설정
             FontAttributes = FontAttributes.Bold | FontAttributes.Italic // 두껍고 기울임 스타일 설정
         };
 
+
+        Label LanguageLabel = new Label
+        {
+            Text = Resources[$"string_select_language.{_languageCode}"].ToString(),
+            FontSize = Device.GetNamedSize(NamedSize.Large, typeof(Label)), // 폰트 크기를 크게 설정
+            FontAttributes = FontAttributes.Bold | FontAttributes.Italic // 두껍고 기울임 스타일 설정
+        };
+
+
+        // 언어 선택을 위한 RadioButton 추가
+        var koreanRadioButton = new RadioButton { Content = "한국어", GroupName = "Language", IsChecked = true };
+        var englishRadioButton = new RadioButton { Content = "English", GroupName = "Language" };
+        var japaneseRadioButton = new RadioButton { Content = "日本語", GroupName = "Language" };
+
+
+        if(koreanRadioButton.IsChecked)
+        {
+            SetLanguage("ko");
+        }
+        else if (englishRadioButton.IsChecked)
+        {
+            SetLanguage("en");
+        }
+        else if (japaneseRadioButton.IsChecked)
+        {
+            SetLanguage("jp");
+        }
+        
         // 팝업 생성
         ContentPage popupPage = new ContentPage
         {
             Content = new StackLayout
             {
                 Children = {
-                    ipLabel,
-                    jsonEntry,
-                    new Button { Text = "저장", Command = new Command(() => SaveConfig(FormatIpAddress(jsonEntry.Text))), Margin = new Thickness(0, 10, 0, 0) },
-                    new Button { Text = "닫기", Command = new Command(async () => await Navigation.PopModalAsync()), Margin = new Thickness(0, 10, 0, 0) }
-                }
+                ipLabel,
+                jsonEntry,
+                LanguageLabel,
+                koreanRadioButton,
+                englishRadioButton,
+                japaneseRadioButton,
+                new Button { Text = Resources[$"string_save.{_languageCode}"].ToString(), Command = new Command(() => SaveConfig(FormatIpAddress(jsonEntry.Text))), Margin = new Thickness(0, 10, 0, 0) },
+                new Button { Text = Resources[$"string_close.{_languageCode}"].ToString(), Command = new Command(async () => await Navigation.PopModalAsync()), Margin = new Thickness(0, 10, 0, 0) }
+            }
             }
         };
 
@@ -167,7 +221,7 @@ public partial class MainPage : ContentPage
         catch (Exception ex)
         {
             // 읽기 중 오류가 발생한 경우 오류 메시지 표시
-            DisplayAlert("오류", $"읽기 중 오류가 발생했습니다. 오류 메시지: {ex.Message}", "확인");
+            //DisplayAlert("오류", $"읽기 중 오류가 발생했습니다. 오류 메시지: {ex.Message}", "확인");
         }
 
         return string.Empty;
@@ -177,12 +231,13 @@ public partial class MainPage : ContentPage
     {
         try
         {
+         
             // JSON 문자열을 파일에 저장
             string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "config.json");
             File.WriteAllText(filePath, jsonText);
 
             // 성공적으로 저장되었음을 알리는 메시지 표시
-            DisplayAlert("저장 성공", "Config가 성공적으로 저장되었습니다.", "확인");
+            DisplayAlert(Resources[$"string_save_success.{_languageCode}"].ToString(), Resources[$"string_save_success_info.{_languageCode}"].ToString(), Resources[$"string_ok.{_languageCode}"].ToString());
             _ipAddress = jsonText;
             MessagingCenter.Send<object, string>(this, "IP_ADDRESS", _ipAddress);
             Navigation.PopModalAsync();
@@ -193,7 +248,7 @@ public partial class MainPage : ContentPage
         catch (Exception ex)
         {
             // 저장 중 오류가 발생한 경우 오류 메시지 표시
-            DisplayAlert("오류", $"저장 중 오류가 발생했습니다. 오류 메시지: {ex.Message}", "확인");
+            //DisplayAlert("오류", $"저장 중 오류가 발생했습니다. 오류 메시지: {ex.Message}", "확인");
         }
     }
 
