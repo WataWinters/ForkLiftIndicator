@@ -29,7 +29,18 @@ public partial class MainPage : ContentPage
         viewModel  = new MainViewModel(); //binding
         BindingContext = viewModel;
 
-        SetLanguage("ko");
+        var (ipAddress, languageCode) = ReadSavedJson();
+        _ipAddress = ipAddress;
+        _languageCode = languageCode;
+
+
+        SetLanguage(_languageCode);
+
+     //   string key = $"string_offline.{_languageCode}";
+     //   string offlineString = Application.Current.Resources[key] as string;
+
+
+
         viewModel.LeftStatusLabel = Resources[$"string_offline.{_languageCode}"].ToString();
         viewModel.RightStatusLabel = Resources[$"string_offline.{_languageCode}"].ToString();
         viewModel.back_ground_src = "screen_inactive.png";
@@ -41,7 +52,14 @@ public partial class MainPage : ContentPage
         viewModel.TotalWeight_Label = "-";
 
 
-        _ipAddress = ReadSavedJson();
+ 
+        if((_ipAddress == "")  || (_ipAddress == ""))
+        {
+            _ipAddress = "192.168.8.100";
+            _languageCode = "en";
+            SaveConfig(_ipAddress, _languageCode);
+        }
+
 
         TCPSocketClient msg = new TCPSocketClient(_ipAddress);
         msg.Initialize();
@@ -64,9 +82,12 @@ public partial class MainPage : ContentPage
         _languageCode = languageCode;
 
         // 언어에 맞는 리소스 키를 사용하여 텍스트 갱신
-        Resources["label_QRInfo"] = Resources[$"label_QRInfo.{languageCode}"];
-        Resources["label_Height"] = Resources[$"label_Height.{languageCode}"];
-        Resources["Button_SendPlatform"] = Resources[$"Button_SendPlatform.{languageCode}"];
+        Resources["label_QRInfo"] = Resources[$"label_QRInfo.{_languageCode}"];
+        Resources["label_Height"] = Resources[$"label_Height.{_languageCode}"];
+        Resources["Button_SendPlatform"] = Resources[$"Button_SendPlatform.{_languageCode}"];
+        string temp = Resources[$"string_offline.{_languageCode}"].ToString();
+        viewModel.LeftStatusLabel = temp;
+        viewModel.RightStatusLabel = Resources[$"string_offline.{_languageCode}"].ToString();
     }
 
 
@@ -126,7 +147,10 @@ public partial class MainPage : ContentPage
     }
 
 
-    
+    RadioButton koreanRadioButton;
+    RadioButton englishRadioButton;
+    RadioButton japaneseRadioButton;
+
    // 
 
     private void OnSendBtn(object sender, EventArgs e)
@@ -140,13 +164,17 @@ public partial class MainPage : ContentPage
     private async void OpenPopup()
     {
         // 저장된 JSON 데이터를 읽어옴
-        string savedJson = ReadSavedJson();
-       
+        var (ipAddress, languageCode) = ReadSavedJson();
+        _languageCode = languageCode;
+        _ipAddress = ipAddress;
+
+
+
         // 팝업에서 입력받을 데이터를 위한 Entry 생성
         Entry jsonEntry = new Entry
         {
             Placeholder = "(ex: 192.168.0.1)",
-            Text = FormatIpAddress(savedJson) // 저장된 JSON 데이터를 Entry에 설정하면서 형식 변환
+            Text = FormatIpAddress(_ipAddress) // 저장된 JSON 데이터를 Entry에 설정하면서 형식 변환
         };
 
         // "접속 IP" 라벨 추가
@@ -167,24 +195,30 @@ public partial class MainPage : ContentPage
 
 
         // 언어 선택을 위한 RadioButton 추가
-        var koreanRadioButton = new RadioButton { Content = "한국어", GroupName = "Language", IsChecked = true };
-        var englishRadioButton = new RadioButton { Content = "English", GroupName = "Language" };
-        var japaneseRadioButton = new RadioButton { Content = "日本語", GroupName = "Language" };
+        koreanRadioButton = new RadioButton { Content = "한국어", GroupName = "Language", IsChecked = true };
+        englishRadioButton = new RadioButton { Content = "English", GroupName = "Language" };
+        japaneseRadioButton = new RadioButton { Content = "日本語", GroupName = "Language" };
 
 
-        if(koreanRadioButton.IsChecked)
+        koreanRadioButton.IsChecked = false;
+        englishRadioButton.IsChecked = false;
+        japaneseRadioButton.IsChecked = false;
+
+        if (_ipAddress == "ko")
         {
-            SetLanguage("ko");
+            koreanRadioButton.IsChecked = true;
         }
-        else if (englishRadioButton.IsChecked)
+        else if (_ipAddress == "en")
         {
-            SetLanguage("en");
+            englishRadioButton.IsChecked = true;
         }
-        else if (japaneseRadioButton.IsChecked)
+        else
         {
-            SetLanguage("jp");
+            japaneseRadioButton.IsChecked = true;
         }
-        
+
+
+
         // 팝업 생성
         ContentPage popupPage = new ContentPage
         {
@@ -197,7 +231,7 @@ public partial class MainPage : ContentPage
                 koreanRadioButton,
                 englishRadioButton,
                 japaneseRadioButton,
-                new Button { Text = Resources[$"string_save.{_languageCode}"].ToString(), Command = new Command(() => SaveConfig(FormatIpAddress(jsonEntry.Text))), Margin = new Thickness(0, 10, 0, 0) },
+                new Button { Text = Resources[$"string_save.{_languageCode}"].ToString(), Command = new Command(() => SaveConfig(FormatIpAddress(jsonEntry.Text), GetSelectedLanguage())), Margin = new Thickness(0, 10, 0, 0) },
                 new Button { Text = Resources[$"string_close.{_languageCode}"].ToString(), Command = new Command(async () => await Navigation.PopModalAsync()), Margin = new Thickness(0, 10, 0, 0) }
             }
             }
@@ -207,7 +241,7 @@ public partial class MainPage : ContentPage
         await Navigation.PushModalAsync(popupPage);
     }
 
-    private string ReadSavedJson()
+    private (string ipAddress, string languageCode) ReadSavedJson()
     {
         try
         {
@@ -215,31 +249,65 @@ public partial class MainPage : ContentPage
             string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "config.json");
             if (File.Exists(filePath))
             {
-                return File.ReadAllText(filePath);
+                string jsonText = File.ReadAllText(filePath);
+                JObject json = JObject.Parse(jsonText);
+
+                string ipAddress = json["ipAddress"]?.ToString();
+                string languageCode = json["languageCode"]?.ToString();
+
+                return (ipAddress, languageCode);
             }
         }
         catch (Exception ex)
         {
-            // 읽기 중 오류가 발생한 경우 오류 메시지 표시
-            //DisplayAlert("오류", $"읽기 중 오류가 발생했습니다. 오류 메시지: {ex.Message}", "확인");
+            // 읽기 중 오류가 발생한 경우 디폴트 값으로 저장
+            SaveConfig("192.168.8.100", "en");
+
+            // 디폴트 값 반환
+            return ("192.168.8.100", "en");
         }
 
-        return string.Empty;
+        return (string.Empty, string.Empty);
     }
 
-    private void SaveConfig(string jsonText)
+    private void SaveConfig(string ipAddress, string languageCode)
     {
         try
         {
-         
+            // JSON 형식으로 저장할 객체 생성
+            var config = new
+            {
+                ipAddress,
+                languageCode
+            };
+
+            // JSON 문자열로 변환
+            string jsonText = JsonConvert.SerializeObject(config);
+
             // JSON 문자열을 파일에 저장
             string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "config.json");
             File.WriteAllText(filePath, jsonText);
 
             // 성공적으로 저장되었음을 알리는 메시지 표시
-            DisplayAlert(Resources[$"string_save_success.{_languageCode}"].ToString(), Resources[$"string_save_success_info.{_languageCode}"].ToString(), Resources[$"string_ok.{_languageCode}"].ToString());
-            _ipAddress = jsonText;
+            //DisplayAlert(Resources[$"string_save_success.{_languageCode}"].ToString(), Resources[$"string_save_success_info.{_languageCode}"].ToString(), Resources[$"string_ok.{_languageCode}"].ToString());
+
+            _ipAddress = ipAddress;
             MessagingCenter.Send<object, string>(this, "IP_ADDRESS", _ipAddress);
+
+            if (koreanRadioButton.IsChecked)
+            {
+                SetLanguage("ko");
+            }
+            else if (englishRadioButton.IsChecked)
+            {
+                SetLanguage("en");
+            }
+            else if (japaneseRadioButton.IsChecked)
+            {
+                SetLanguage("jp");
+            }
+
+
             Navigation.PopModalAsync();
 
 
@@ -251,6 +319,27 @@ public partial class MainPage : ContentPage
             //DisplayAlert("오류", $"저장 중 오류가 발생했습니다. 오류 메시지: {ex.Message}", "확인");
         }
     }
+
+
+
+
+    private string GetSelectedLanguage()
+    {
+        if (koreanRadioButton.IsChecked)
+        {
+            return "ko";
+        }
+        else if (japaneseRadioButton.IsChecked)
+        {
+            return "jp";
+        }
+        else
+        {
+            return "en";
+        }
+    }
+
+
 
     private string FormatIpAddress(string ipAddress)
     {

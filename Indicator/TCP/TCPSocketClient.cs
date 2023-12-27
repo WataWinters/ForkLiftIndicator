@@ -69,20 +69,30 @@ namespace Indicator.TCP
 
         private void StatusCheck()
         {
-            if (_OlineCheckCnt < 5)
+            try
             {
-                //DisConnect Status
-                MessagingCenter.Send<object, string>(this, "TCP_STATUS_Receive", "disconnect");
+                if (_OlineCheckCnt < 5)
+                {
+                    //DisConnect Status
+                    MessagingCenter.Send<object, string>(this, "TCP_STATUS_Receive", "disconnect");
 
-                _OlineCheckCnt = 0;
+                    _OlineCheckCnt = 0;
+                }
+                else
+                {
+                    //Connect Status
+                    MessagingCenter.Send<object, string>(this, "TCP_STATUS_Receive", "connect");
+                }
+
+
+                _OlineCheckCnt--;
             }
-            else
+            catch
             {
-                //Connect Status
-                MessagingCenter.Send<object, string>(this, "TCP_STATUS_Receive", "connect");
+                    
+                    
+                    
             }
-
-            _OlineCheckCnt--;
         }
 
         
